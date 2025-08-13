@@ -72,6 +72,24 @@
             height: 100%;
             border: none;
             z-index: 2;
+            display: none; /* Initially hidden */
+        }
+
+        /* Loading screen styles */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white; /* Changed to white */
+            color: black; /* Changed to black */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            z-index: 1001; /* Higher than iframe */
         }
     </style>
 </head>
@@ -79,6 +97,9 @@
 
     <!-- Main Webframe Container - This will now host the iframe -->
     <div id="webframe-container">
+        <!-- Loading screen to prevent theme color flash -->
+        <div id="loading-screen">
+        </div>
         <!-- Canvas for particle effects. The user will provide the details later. -->
         <canvas id="particle-canvas"></canvas>
     </div>
@@ -86,19 +107,19 @@
     <!-- Popup for No Internet Connection -->
     <div id="no-internet-popup" class="full-screen-popup">
         <h1>Opsss!</h1>
-        <p>ওহ! কোনো ইন্টারনেট সংযোগ নেই।</p>
+        <p>opss no net</p>
     </div>
 
     <!-- Popup for Blocked IP Address -->
     <div id="blocked-ip-popup" class="full-screen-popup">
-        <h1>Opsss!</h1>
-        <p>You are blocked.</p>
+        <h1>Uppss!</h1>
+        <p>uppss ip blocked !</p>
     </div>
 
     <!-- Popup for VPN/Non-Bangladeshi User -->
     <div id="vpn-popup" class="full-screen-popup">
         <h1>Opsss!</h1>
-        <p>I hate you!</p>
+        <p>Opsss VPN user !</p>
     </div>
 
     <script>
@@ -107,10 +128,12 @@
             const blockedIpPopup = document.getElementById('blocked-ip-popup');
             const vpnPopup = document.getElementById('vpn-popup');
             const webframeContainer = document.getElementById('webframe-container');
+            const loadingScreen = document.getElementById('loading-screen');
 
             // Function to show a specific popup and hide others
             function showPopup(popupElement) {
-                // Hide all popups first
+                // Hide the loading screen and all other popups first
+                loadingScreen.style.display = 'none';
                 noInternetPopup.style.display = 'none';
                 blockedIpPopup.style.display = 'none';
                 vpnPopup.style.display = 'none';
@@ -133,14 +156,15 @@
             // In a real application, you would use a backend API or a client-side
             // service to get the user's IP and geolocation data.
             const simulatedUser = {
-                ip: '103.178.212.33',
-                country: 'Bangladesh', // Set to 'Bangladesh' for a successful load
+                ip: '103.178.242.33',
+                country: 'Bangladesh',
                 isBlocked: false,
                 isOnline: true
             };
             
+            // This is the new blocked IP list based on the first three segments
             const blockedIPs = [
-                '103.178.942',
+                '103.178.212',
                 '203.0.113'
             ];
             
@@ -162,17 +186,27 @@
             // If all checks pass, create and append the iframe
             const iframe = document.createElement('iframe');
             iframe.id = 'main-iframe';
-            iframe.src = 'https://facebook.com';
+            // Changed the target URL to a website that allows embedding
+            iframe.src = 'https://wikipedia.org';
+
+            // When the iframe content loads, hide the loading screen and show the iframe
+            iframe.onload = () => {
+                loadingScreen.style.display = 'none';
+                iframe.style.display = 'block';
+            };
+
             webframeContainer.appendChild(iframe);
         });
 
         // Event listener for the online/offline status, will trigger instantly if no connection is detected
         window.addEventListener('offline', () => {
-            document.getElementById('no-internet-popup').style.display = 'flex';
+            showPopup(noInternetPopup);
         });
 
         window.addEventListener('online', () => {
-            document.getElementById('no-internet-popup').style.display = 'none';
+            // Re-run the main logic when back online
+            // This is a simple solution, a full refresh or more complex state management may be needed
+            window.location.reload(); 
         });
         
         // Particle system logic will go here. The user said they will provide more details later.
